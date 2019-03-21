@@ -4,47 +4,41 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 )
-type timeFormat struct{
-	hour int
-	minute int
-	second int
-}
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	//location := vars["key"]
 	for _, value := range vars{
 		switch value {
 		case "moscow":
-			location, err := time.LoadLocation("Europe/Moscow")
+			newLocation, err := time.LoadLocation("Europe/Moscow")
 			if err != nil {
 				log.Println("Error in 'moscow' case adding location: ", err)
 			}
-			tM := time.Time{}.In(location)
-			currTime := timeFormat{tM.Hour(), tM.Minute(), tM.Second(),}
-			timeNow := strconv.Itoa(currTime.hour) + ":" + strconv.Itoa(currTime.minute) + ":" + strconv.Itoa(currTime.second)
-			_, errWrite := w.Write([]byte("Moscow:" + timeNow))
+			tM := time.Now().In(newLocation)
+			currTime := tM.Format(time.RFC1123Z)
+			_, errWrite := w.Write([]byte("Moscow:" + currTime))
 			if errWrite != nil {
 				log.Println("Error in 'minsk' case writing data: ", err)
 			}
 
-
-		case "default":
-			_, err := w.Write([]byte("Wrong input, sending Minsk time instead: \n"))
-			if err != nil {
-				log.Println("Error in default: ", err)
-			}
-			fallthrough
 		case "minsk":
 			t:= time.Now()
-			currTime := timeFormat{t.Hour(), t.Minute(), t.Second(),}
-			timeNow := strconv.Itoa(currTime.hour) + ":" + strconv.Itoa(currTime.minute) + ":" + strconv.Itoa(currTime.second)
-			_, err := w.Write([]byte("Minsk:" + timeNow))
+			currTime := t.Format(time.RFC1123Z)
+			_, err := w.Write([]byte("Minsk:" + currTime))
 			if err != nil {
 				log.Println("Error in 'minsk' case writing data: ", err)
 			}
+		default:
+			t:= time.Now().UTC()
+			defTime := t.Format(time.RFC1123Z)
+			_, err := w.Write([]byte("Wrong input, sending UTC time instead: " + defTime))
+			if err != nil {
+				log.Println("Error in default: ", err)
+			}
+
 
 		}
 
@@ -56,5 +50,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/time/{key}", handler)
-	http.ListenAndServe(":9093", router)
+	err := http.ListenAndServe(":9093", router)
+	if err != nil {
+		panic(err)
+	}
 }
