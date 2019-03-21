@@ -9,8 +9,7 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	//location := vars["key"]
-	for _, value := range vars{
+	for _, value := range vars {
 		switch value {
 		case "moscow":
 			newLocation, err := time.LoadLocation("Europe/Moscow")
@@ -25,27 +24,25 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "minsk":
-			t:= time.Now()
+			t := time.Now()
 			currTime := t.Format(time.RFC1123Z)
 			_, err := w.Write([]byte("Minsk:" + currTime))
 			if err != nil {
 				log.Println("Error in 'minsk' case writing data: ", err)
 			}
 		default:
-			t:= time.Now().UTC()
+			t := time.Now().UTC()
 			defTime := t.Format(time.RFC1123Z)
 			_, err := w.Write([]byte("Wrong input, sending UTC time instead: " + defTime))
 			if err != nil {
 				log.Println("Error in default: ", err)
 			}
 
-
 		}
 
 	}
 
 }
-
 
 func main() {
 	router := mux.NewRouter()
