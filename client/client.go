@@ -5,10 +5,16 @@ import (
 	"log"
 	"net/http"
 )
+type TimeInfo struct {
+
+}
 
 func main() {
+
 	resp, err := http.Get("http://localhost:9093/time/minsk")
 	resp1, err1 := http.Get("http://localhost:9093/time/moscow")
+	//respForQuery, errQuery := http.Post()
+
 	if err != nil || err1 != nil {
 		log.Fatalln("Error getting time")
 	}

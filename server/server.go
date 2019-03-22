@@ -1,47 +1,23 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
+	//"encoding/json"
+	"http-project/server/execute"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
+////// implements http.Handler interface///////////
 func handler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	t := time.Now()
-	r.FormValue("location")
 	if location := vars["key"]; location != "" {
-		switch location {
-		case "moscow":
-			newLocation, err := time.LoadLocation("Europe/Moscow")
-			if err != nil {
-				log.Println("Error in 'moscow' case adding location: ", err)
-			}
-			tM := t.In(newLocation)
-			currTime := tM.Format(time.RFC1123Z)
-			_, errWrite := w.Write([]byte("Moscow:" + currTime))
-			if errWrite != nil {
-				log.Println("Error in 'minsk' case writing data: ", err)
-			}
-
-		case "minsk":
-			currTime := t.Format(time.RFC1123Z)
-			_, err := w.Write([]byte("Minsk:" + currTime))
-			if err != nil {
-				log.Println("Error in 'minsk' case writing data: ", err)
-			}
-		default:
-			t := t.UTC()
-			defTime := t.Format(time.RFC1123Z)
-			_, err := w.Write([]byte("Wrong input, sending UTC time instead: " + defTime))
-			if err != nil {
-				log.Println("Error in default: ", err)
-			}
-
-		}
+		execute.ManageLocation(location, t, w)
 	} else {
-		_, err := w.Write([]byte("There is now input"))
+		_, err := w.Write([]byte("There is no input"))
 		if err != nil {
 			log.Println("Input error: ", err)
 		}
@@ -49,8 +25,23 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func handlerQuery(w http.ResponseWriter, r *http.Request) {
+	if location := r.FormValue("location"); location != "" {
+		t := time.Now()
+		execute.ManageLocation(location, t, w)
+	} else {
+		_, err := w.Write([]byte("There is no input"))
+		if err != nil {
+			log.Println("Input error: ", err)
+		}
+	}
+
+}
 func main() {
+
+	//err := json.NewEncoder(w).Encode(todos)
 	router := mux.NewRouter()
-	router.HandleFunc("/time/{key}", handler)
+	router.HandleFunc("/time", handlerQuery).Methods(http.MethodPost, "GET")
+	router.HandleFunc("/time/{key}", handler).Methods("POST", "GET")
 	log.Fatal(http.ListenAndServe(":9093", router))
 }
