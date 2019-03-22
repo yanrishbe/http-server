@@ -9,14 +9,16 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	for _, value := range vars {
-		switch value {
+	t := time.Now()
+	r.FormValue("location")
+	if location := vars["key"]; location != "" {
+		switch location {
 		case "moscow":
 			newLocation, err := time.LoadLocation("Europe/Moscow")
 			if err != nil {
 				log.Println("Error in 'moscow' case adding location: ", err)
 			}
-			tM := time.Now().In(newLocation)
+			tM := t.In(newLocation)
 			currTime := tM.Format(time.RFC1123Z)
 			_, errWrite := w.Write([]byte("Moscow:" + currTime))
 			if errWrite != nil {
@@ -24,14 +26,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "minsk":
-			t := time.Now()
 			currTime := t.Format(time.RFC1123Z)
 			_, err := w.Write([]byte("Minsk:" + currTime))
 			if err != nil {
 				log.Println("Error in 'minsk' case writing data: ", err)
 			}
 		default:
-			t := time.Now().UTC()
+			t := t.UTC()
 			defTime := t.Format(time.RFC1123Z)
 			_, err := w.Write([]byte("Wrong input, sending UTC time instead: " + defTime))
 			if err != nil {
@@ -39,7 +40,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}
-
+	} else {
+		_, err := w.Write([]byte("There is now input"))
+		if err != nil {
+			log.Println("Input error: ", err)
+		}
 	}
 
 }
@@ -47,8 +52,5 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/time/{key}", handler)
-	err := http.ListenAndServe(":9093", router)
-	if err != nil {
-		panic(err)
-	}
+	log.Fatal(http.ListenAndServe(":9093", router))
 }
