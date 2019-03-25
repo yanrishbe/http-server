@@ -11,7 +11,7 @@ func TimeByLocation(location string) (string, error) {
 	case "moscow":
 		newLocation, err := time.LoadLocation("Europe/Moscow")
 		if err != nil {
-			return t.Format(time.RFC1123Z), err
+			return "", err
 		}
 		tM := t.In(newLocation)
 		return tM.Format(time.RFC1123Z), nil
