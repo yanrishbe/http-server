@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/yanrishbe/http-server/entities"
+	"http-project/entities"
 )
 
 func GetData(r *http.Response) {
