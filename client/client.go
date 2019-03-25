@@ -21,7 +21,7 @@ func GetData(r *http.Response) {
 	if err != nil {
 		log.Println("Decoding server's output error: ", err)
 	}
-	log.Println(string(dataFromServer.City + ": " + dataFromServer.Time))
+	log.Println(dataFromServer.City + ": " + dataFromServer.Time)
 
 }
 
